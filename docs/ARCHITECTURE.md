@@ -1,9 +1,9 @@
-# 🏗️ 讀書筆記本系統 — 系統架構文件（ARCHITECTURE）
+# 📐 讀書筆記本系統 — 系統架構文件（ARCHITECTURE）
 
 **版本**：v1.0  
 **建立日期**：2026-04-25  
 **作者**：Alice  
-**參考文件**：`docs/PRD.md`  
+**狀態**：草稿  
 
 ---
 
@@ -11,350 +11,220 @@
 
 ### 1.1 選用技術與原因
 
-| 技術 | 版本建議 | 選用原因 |
-|------|----------|----------|
-| **Python** | 3.10+ | 語法簡潔，生態豐富，適合快速開發個人工具 |
-| **Flask** | 3.x | 輕量級 Web 框架，無複雜配置，適合中小型專案 |
-| **Jinja2** | 隨 Flask 附帶 | Flask 內建模板引擎，與 Python 語法高度整合 |
-| **SQLite** | 3.x | 零設定、單檔案資料庫，適合本地端個人應用 |
-| **sqlite3** | Python 標準庫 | 無需額外安裝，直接操作 SQLite |
-| **Chart.js** | 4.x (CDN) | 輕量圖表庫，透過 CDN 引用不需安裝 |
-| **Vanilla CSS** | — | 直接控制樣式，不依賴框架，適合客製化設計 |
+| 層級 | 技術 | 選用原因 |
+|------|------|----------|
+| **後端框架** | Python + Flask | 輕量、易學，適合單人本地應用；路由設計直覺簡潔 |
+| **模板引擎** | Jinja2 | Flask 內建，與 Python 語法相近，易於傳遞資料至 HTML |
+| **資料庫** | SQLite + SQLAlchemy ORM | 零配置、無需獨立伺服器；SQLAlchemy 提供安全的 ORM 操作，防止 SQL Injection |
+| **前端** | HTML5 + Vanilla CSS + JavaScript | 不引入額外框架，保持輕量；JavaScript 處理即時搜尋與 Chart.js 圖表 |
+| **圖表** | Chart.js | CDN 引入方便，API 易用，支援折線圖與圓餅圖 |
+| **部署環境** | 本地端（localhost） | 個人單機使用，無需雲端部署 |
 
 ### 1.2 Flask MVC 模式說明
 
-本系統採用 **MVC（Model-View-Controller）** 架構組織程式碼：
+本專案採用 **MVC（Model / View / Controller）** 架構，各層職責如下：
 
-```
-┌────────────────────────────────────────────────────────┐
-│                      MVC 職責分工                       │
-├──────────────┬─────────────────────────────────────────┤
-│    Model     │  負責與資料庫溝通                         │
-│  (models/)   │  • 執行 SQL 查詢（新增/查詢/更新/刪除）   │
-│              │  • 封裝資料存取邏輯，讓路由不直接碰 SQL   │
-├──────────────┼─────────────────────────────────────────┤
-│     View     │  負責呈現 HTML 頁面                       │
-│ (templates/) │  • Jinja2 模板，動態插入 Python 資料      │
-│              │  • 只管顯示，不含商業邏輯                 │
-├──────────────┼─────────────────────────────────────────┤
-│  Controller  │  負責接收請求、協調 Model 與 View          │
-│   (routes/)  │  • 處理 HTTP 路由（GET/POST）             │
-│              │  • 輸入驗證、呼叫 Model、選擇渲染哪個模板 │
-└──────────────┴─────────────────────────────────────────┘
-```
+| 角色 | 對應技術 | 職責 |
+|------|----------|------|
+| **Model（模型）** | `app/models/` + SQLAlchemy | 定義資料表結構、處理資料庫的 CRUD 操作 |
+| **View（視圖）** | `app/templates/` Jinja2 HTML | 負責呈現頁面給使用者，由 Flask 傳入資料後渲染 |
+| **Controller（控制器）** | `app/routes/` Flask Blueprint | 接收使用者請求、呼叫 Model 取得資料、選擇對應 View 回傳 |
 
 ---
 
 ## 2. 專案資料夾結構
 
 ```
-reading_notebook/                  ← 專案根目錄
+reading-notebook/
 │
-├── app/                           ← 主要應用程式套件
-│   ├── __init__.py                ← Flask app 初始化、Blueprint 註冊
+├── app/                          ← 主應用程式套件
+│   ├── __init__.py               ← 建立 Flask app、初始化 SQLAlchemy、註冊 Blueprint
 │   │
-│   ├── models/                    ← Model 層（資料庫存取）
+│   ├── models/                   ← 資料庫模型（Model 層）
 │   │   ├── __init__.py
-│   │   ├── db.py                  ← 資料庫連線函式（get_db_connection）
-│   │   ├── book.py                ← Book 相關 CRUD 函式
-│   │   └── tag.py                 ← Tag 相關 CRUD 函式
+│   │   ├── book.py               ← Book 資料表模型
+│   │   └── tag.py                ← Tag 與 BookTag 資料表模型
 │   │
-│   ├── routes/                    ← Controller 層（Flask 路由）
+│   ├── routes/                   ← Flask 路由／控制器（Controller 層）
 │   │   ├── __init__.py
-│   │   ├── books.py               ← 書籍 CRUD 路由（Blueprint: books）
-│   │   ├── search.py              ← 搜尋與篩選路由（Blueprint: search）
-│   │   ├── stats.py               ← 統計儀表板路由（Blueprint: stats）
-│   │   ├── tags.py                ← 標籤管理路由（Blueprint: tags）
-│   │   ├── quotes.py              ← 金句收藏路由（Blueprint: quotes）
-│   │   └── export.py              ← 資料匯出路由（Blueprint: export）
+│   │   ├── books.py              ← 書籍 CRUD 路由（新增、列表、詳細、編輯、刪除）
+│   │   ├── search.py             ← 搜尋與篩選路由
+│   │   ├── dashboard.py          ← 統計儀表板路由
+│   │   ├── quotes.py             ← 金句收藏庫路由
+│   │   ├── tags.py               ← 標籤管理路由
+│   │   └── export.py             ← 資料匯出路由（CSV / JSON）
 │   │
-│   ├── templates/                 ← View 層（Jinja2 HTML 模板）
-│   │   ├── base.html              ← 基礎模板（導覽列、共用 head）
+│   ├── templates/                ← Jinja2 HTML 模板（View 層）
+│   │   ├── base.html             ← 共用基礎模板（導航列、側邊欄、CSS 載入）
 │   │   ├── books/
-│   │   │   ├── index.html         ← 書籍清單頁
-│   │   │   ├── detail.html        ← 書籍詳細頁
-│   │   │   ├── create.html        ← 新增書籍頁
-│   │   │   └── edit.html          ← 編輯書籍頁
+│   │   │   ├── list.html         ← 書籍清單頁
+│   │   │   ├── detail.html       ← 書籍詳細頁
+│   │   │   ├── create.html       ← 新增書籍表單頁
+│   │   │   └── edit.html         ← 編輯書籍表單頁
 │   │   ├── search/
-│   │   │   └── index.html         ← 搜尋結果頁
-│   │   ├── stats/
-│   │   │   └── dashboard.html     ← 統計儀表板頁
-│   │   ├── tags/
-│   │   │   └── index.html         ← 標籤管理頁
+│   │   │   └── index.html        ← 搜尋與篩選頁
+│   │   ├── dashboard/
+│   │   │   └── index.html        ← 統計儀表板頁
 │   │   ├── quotes/
-│   │   │   └── index.html         ← 金句收藏頁
-│   │   └── errors/
-│   │       ├── 404.html           ← 404 錯誤頁
-│   │       └── 500.html           ← 500 錯誤頁
+│   │   │   └── index.html        ← 金句收藏庫頁
+│   │   └── tags/
+│   │       └── index.html        ← 標籤管理頁
 │   │
-│   └── static/                    ← 靜態資源
+│   └── static/                   ← 靜態資源
 │       ├── css/
-│       │   └── style.css          ← 全站樣式（深色主題）
+│       │   └── style.css         ← 全域樣式（Dark Mode 主題、卡片、動畫）
 │       └── js/
-│           ├── main.js            ← 通用互動邏輯（Toast、確認對話框）
-│           ├── search.js          ← 即時搜尋功能
-│           └── charts.js          ← Chart.js 圖表初始化
+│           ├── search.js         ← 即時搜尋邏輯
+│           ├── dashboard.js      ← Chart.js 圖表初始化
+│           └── ui.js             ← 通用 UI 互動（Toast、確認對話框、複製金句）
 │
-├── instance/                      ← 執行期資料（不進 Git）
-│   └── database.db                ← SQLite 資料庫檔案
+├── instance/
+│   └── database.db               ← SQLite 資料庫檔案（git 忽略）
 │
-├── database/
-│   └── schema.sql                 ← 資料庫建表 SQL（初始化用）
-│
-├── docs/                          ← 文件目錄
-│   ├── PRD.md                     ← 產品需求文件
-│   ├── ARCHITECTURE.md            ← 本文件
-│   └── ...（後續流程圖、DB 設計等）
-│
-├── app.py                         ← 應用程式入口點
-├── requirements.txt               ← Python 套件清單
-├── .env.example                   ← 環境變數範例（不含機密）
-├── .gitignore                     ← 忽略 instance/、.venv/ 等
-└── README.md                      ← 專案說明
+├── app.py                        ← 應用程式入口（啟動 Flask dev server）
+├── config.py                     ← 設定檔（資料庫路徑、Debug 模式等）
+├── requirements.txt              ← Python 套件清單
+└── .gitignore                    ← 忽略 instance/、__pycache__/ 等
 ```
 
 ---
 
 ## 3. 元件關係圖
 
-### 3.1 整體架構圖
+### 3.1 請求與回應流程
 
 ```mermaid
 graph TD
-    Browser["🌐 瀏覽器"]
-
-    subgraph Flask應用["Flask 應用 (localhost:5000)"]
-        Router["routes/<br/>Controller 層<br/>Blueprint 路由"]
-        Model["models/<br/>Model 層<br/>SQL 存取"]
-        Jinja["templates/<br/>View 層<br/>Jinja2 模板"]
-        Static["static/<br/>CSS / JS"]
-    end
-
-    SQLite[("💾 SQLite<br/>instance/database.db")]
-
-    Browser -->|"HTTP Request<br/>(GET/POST)"| Router
-    Router -->|"呼叫 CRUD 函式"| Model
-    Model -->|"執行 SQL"| SQLite
-    SQLite -->|"回傳資料列"| Model
-    Model -->|"回傳 Python dict"| Router
-    Router -->|"render_template(data)"| Jinja
-    Jinja -->|"HTML 響應"| Browser
-    Browser -->|"載入靜態資源"| Static
+    A[🌐 瀏覽器 Browser] -->|HTTP Request| B[Flask Route\napp/routes/]
+    B -->|查詢 / 寫入| C[SQLAlchemy Model\napp/models/]
+    C -->|SQL 操作| D[(SQLite\ninstance/database.db)]
+    D -->|回傳資料| C
+    C -->|資料物件| B
+    B -->|render_template + 資料| E[Jinja2 Template\napp/templates/]
+    E -->|HTML 回應| A
 ```
 
-### 3.2 新增書籍請求流程
+### 3.2 各功能模組關係
 
-```mermaid
-sequenceDiagram
-    actor User as 使用者
-    participant Browser as 瀏覽器
-    participant Route as routes/books.py
-    participant Model as models/book.py
-    participant DB as SQLite
-
-    User->>Browser: 填寫新增書籍表單並送出
-    Browser->>Route: POST /books/create
-    Route->>Route: 驗證必填欄位（書名、作者、評分、心得）
-    alt 驗證失敗
-        Route-->>Browser: render create.html（顯示錯誤提示）
-    else 驗證成功
-        Route->>Model: book.create(data)
-        Model->>DB: INSERT INTO books (...)
-        DB-->>Model: 回傳新書籍 id
-        Model-->>Route: 回傳 new_id
-        Route-->>Browser: redirect(/books/new_id)
-        Browser->>Route: GET /books/new_id
-        Route->>Model: book.get_by_id(id)
-        Model->>DB: SELECT * FROM books WHERE id=?
-        DB-->>Model: 書籍資料列
-        Model-->>Route: book dict
-        Route-->>Browser: render detail.html（顯示 Toast 通知）
-    end
+```
+┌─────────────────────────────────────────────────────────┐
+│                      Flask Application                   │
+│                                                         │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────┐ │
+│  │  books   │  │  search  │  │dashboard │  │ quotes │ │
+│  │ Blueprint│  │ Blueprint│  │Blueprint │  │Blueprint│ │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └───┬────┘ │
+│       │              │              │             │      │
+│  ┌────▼──────────────▼──────────────▼─────────────▼───┐ │
+│  │              SQLAlchemy ORM (Models)                │ │
+│  │         Book  ←──→  BookTag  ←──→  Tag             │ │
+│  └─────────────────────────┬───────────────────────────┘ │
+│                            │                             │
+└────────────────────────────┼─────────────────────────────┘
+                             ▼
+                    ┌────────────────┐
+                    │  SQLite DB     │
+                    │ database.db    │
+                    └────────────────┘
 ```
 
-### 3.3 搜尋請求流程
+### 3.3 靜態資源載入關係
 
-```mermaid
-sequenceDiagram
-    actor User as 使用者
-    participant Browser as 瀏覽器
-    participant JS as search.js
-    participant Route as routes/search.py
-    participant Model as models/book.py
-    participant DB as SQLite
-
-    User->>Browser: 在搜尋框輸入關鍵字
-    Browser->>JS: input 事件（debounce 300ms）
-    JS->>Route: GET /search?q=關鍵字&tag=分類&min_rating=3
-    Route->>Model: book.search(q, filters)
-    Model->>DB: SELECT ... WHERE title LIKE ? OR author LIKE ? OR review LIKE ?
-    DB-->>Model: 符合資料列
-    Model-->>Route: books list
-    Route-->>Browser: render search/index.html（含高亮結果）
+```
+base.html
+  ├── style.css        ← 所有頁面共用樣式
+  ├── (條件載入) dashboard.js  ← 僅統計頁面載入
+  ├── (條件載入) search.js     ← 僅搜尋頁面載入
+  └── ui.js            ← 所有頁面共用互動邏輯
 ```
 
 ---
 
-## 4. 資料庫 Schema
+## 4. 關鍵設計決策
 
-```sql
--- 書籍筆記主表
-CREATE TABLE books (
-    id           INTEGER  PRIMARY KEY AUTOINCREMENT,
-    title        TEXT     NOT NULL,
-    author       TEXT     NOT NULL,
-    finished_at  DATE     NOT NULL,
-    rating       REAL     NOT NULL CHECK(rating BETWEEN 1 AND 5),
-    review       TEXT     NOT NULL,
-    cover_url    TEXT,
-    is_recommend BOOLEAN  DEFAULT FALSE,
-    quote        TEXT,
-    created_at   DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at   DATETIME DEFAULT CURRENT_TIMESTAMP
-);
+### 決策 1：使用 Flask Blueprint 模組化路由
 
--- 標籤表
-CREATE TABLE tags (
-    id   INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT    NOT NULL UNIQUE
-);
-
--- 書籍與標籤多對多關聯表
-CREATE TABLE book_tags (
-    book_id INTEGER NOT NULL REFERENCES books(id) ON DELETE CASCADE,
-    tag_id  INTEGER NOT NULL REFERENCES tags(id)  ON DELETE CASCADE,
-    PRIMARY KEY (book_id, tag_id)
-);
-
--- 預設標籤種子資料
-INSERT INTO tags (name) VALUES
-    ('科技'), ('文學'), ('心理學'), ('商業'), ('歷史'), ('其他');
-```
+**選擇**：每個功能模組（books、search、dashboard 等）使用獨立的 Blueprint。  
+**原因**：避免所有路由寫在同一個檔案造成混亂；Blueprint 讓每個功能獨立維護，未來新增或移除功能時只需修改對應模組。
 
 ---
 
-## 5. 路由總覽
+### 決策 2：SQLAlchemy ORM 而非直接使用 sqlite3
 
-| Blueprint | HTTP 方法 | URL 路徑 | 功能 | 模板 |
-|-----------|-----------|----------|------|------|
-| `books` | GET | `/` | 書籍清單（可排序） | `books/index.html` |
-| `books` | GET | `/books/<id>` | 書籍詳細頁 | `books/detail.html` |
-| `books` | GET | `/books/create` | 新增書籍表單 | `books/create.html` |
-| `books` | POST | `/books/create` | 送出新增表單 | — redirect |
-| `books` | GET | `/books/<id>/edit` | 編輯書籍表單 | `books/edit.html` |
-| `books` | POST | `/books/<id>/edit` | 送出編輯表單 | — redirect |
-| `books` | POST | `/books/<id>/delete` | 刪除書籍 | — redirect |
-| `search` | GET | `/search` | 搜尋結果頁 | `search/index.html` |
-| `stats` | GET | `/stats` | 統計儀表板 | `stats/dashboard.html` |
-| `stats` | GET | `/stats/api` | 統計 JSON API（供 Chart.js 使用） | — JSON |
-| `tags` | GET | `/tags` | 標籤管理頁 | `tags/index.html` |
-| `tags` | POST | `/tags/create` | 新增標籤 | — redirect |
-| `tags` | POST | `/tags/<id>/delete` | 刪除標籤 | — redirect |
-| `quotes` | GET | `/quotes` | 金句收藏頁 | `quotes/index.html` |
-| `export` | GET | `/export/csv` | 匯出 CSV 檔案 | — file download |
-| `export` | GET | `/export/json` | 匯出 JSON 檔案 | — file download |
-
----
-
-## 6. 關鍵設計決策
-
-### 決策 1：不使用 SQLAlchemy，直接用 sqlite3
-
+**選擇**：使用 SQLAlchemy 操作資料庫，而非原生 `sqlite3` 模組。  
 **原因**：
-- 本專案資料結構固定，不需要 ORM 的物件映射功能
-- `sqlite3` 是 Python 標準庫，零依賴、輕量
-- 直接寫 SQL 更直觀，有助於學習資料庫操作
-
-**取捨**：不如 SQLAlchemy 易於遷移至其他資料庫，但對本地個人應用無影響。
+- ORM 自動防止 SQL Injection 攻擊
+- Python 物件操作比手寫 SQL 更直覺，降低出錯機率
+- 若未來有需要，可輕易切換至 PostgreSQL 等資料庫
 
 ---
 
-### 決策 2：使用 Flask Blueprint 模組化路由
+### 決策 3：Jinja2 服務端渲染，不採前後端分離
 
+**選擇**：所有頁面由 Flask + Jinja2 在伺服器端渲染 HTML。  
 **原因**：
-- 避免所有路由寫在單一 `app.py` 造成難以維護
-- 每個功能模組（書籍、搜尋、統計、標籤、金句、匯出）各自獨立
-- 日後新增功能只需新增 Blueprint，不影響現有程式碼
+- 專案規模小，不需要 React/Vue 等前端框架的複雜度
+- 無需處理 API 跨域（CORS）問題
+- 適合初學者理解完整的 Web 請求流程
 
 ---
 
-### 決策 3：搜尋使用 SQL LIKE，不引入全文搜尋引擎
+### 決策 4：即時搜尋採用前端 JavaScript，統計查詢採用後端
 
+**選擇**：即時搜尋透過 JavaScript 呼叫後端搜尋 API（`/search?q=`），統計儀表板資料在 Flask 路由中計算完畢後傳給模板。  
 **原因**：
-- 個人使用書籍數量預計不超過 500 本，SQL LIKE 效能足夠
-- 無需安裝 Elasticsearch 等額外服務
-- 簡化維護複雜度
-
-**取捨**：不支援模糊拼字搜尋，日後若需要可改用 SQLite FTS5 擴充。
+- 即時搜尋需要快速回應，前端觸發 AJAX 請求避免整頁重載
+- 統計計算涉及複雜聚合查詢，交由後端（SQLAlchemy + SQL）處理更安全高效
 
 ---
 
-### 決策 4：統計圖表使用 Chart.js CDN + JSON API
+### 決策 5：靜態資源集中管理，CSS 採 Dark Mode 優先
 
+**選擇**：所有樣式統一寫在 `style.css`，以 CSS 自訂變數（CSS Variables）定義主題色彩，預設啟用深色模式。  
 **原因**：
-- 統計頁圖表需要 JavaScript 動態渲染，純 Jinja2 無法達成
-- 將統計計算邏輯放在後端 `/stats/api` 回傳 JSON，前端 `charts.js` 負責渲染
-- CDN 引用免安裝，版本升級只需修改 URL
+- CSS Variables 讓色彩管理集中，修改主題只需調整變數值
+- 深色模式（`--bg-primary: #0f1117`、`--accent: #f59e0b`）符合 PRD 設計規格（深藍/深灰底、金色強調）
 
 ---
 
-### 決策 5：`instance/` 目錄存放資料庫，加入 .gitignore
-
-**原因**：
-- Flask 標準慣例，`instance/` 存放執行期資料（不 commit 進 Git）
-- 避免個人讀書資料被推送到 GitHub
-- `database/schema.sql` 提交進 Git，讓任何人都可重建資料庫結構
-
----
-
-## 7. 環境設定
-
-### requirements.txt
+## 5. 資料流說明（以新增書籍為例）
 
 ```
-flask>=3.0.0
-python-dotenv>=1.0.0
-```
-
-### .env.example
-
-```env
-# Flask 設定
-FLASK_ENV=development
-FLASK_DEBUG=1
-SECRET_KEY=your-secret-key-here
-```
-
-### .gitignore 關鍵項目
-
-```gitignore
-instance/
-.venv/
-__pycache__/
-*.pyc
-.env
+1. 使用者填寫表單 → 點擊「儲存」
+        ↓
+2. 瀏覽器送出 POST /books/create
+        ↓
+3. books.py Blueprint 接收請求
+   → 驗證表單資料（必填欄位檢查）
+        ↓
+4. 呼叫 Book Model → SQLAlchemy 建立新資料列
+   → INSERT INTO books (...)
+        ↓
+5. 資料寫入 instance/database.db
+        ↓
+6. 302 Redirect → GET /books/<new_id>
+        ↓
+7. 查詢該筆記 → render_template('books/detail.html', book=book)
+        ↓
+8. 瀏覽器收到 HTML → 顯示詳細頁面 + Toast 通知
 ```
 
 ---
 
-## 8. 啟動說明
+## 6. 環境設定與啟動方式
 
 ```bash
-# 1. 建立虛擬環境
-python3 -m venv .venv
-source .venv/bin/activate
-
-# 2. 安裝套件
+# 1. 安裝套件
 pip install -r requirements.txt
 
-# 3. 初始化資料庫
-python -c "from app import init_db; init_db()"
+# 2. 初始化資料庫
+flask db init  # 或執行自訂的 init_db.py
 
-# 4. 啟動開發伺服器
-flask run
-# 開啟瀏覽器：http://localhost:5000
+# 3. 啟動開發伺服器
+python app.py
+# → 開啟瀏覽器至 http://localhost:5000
 ```
 
 ---
 
-*本文件為 v1.0，依據 `docs/PRD.md v1.0` 產出。如 PRD 有修改，請同步更新本文件。*
+*本文件為 v1.0 草稿，如有修改請更新版本號與日期。*
