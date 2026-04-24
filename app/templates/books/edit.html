@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}編輯 {{ book.title }} — 讀書筆記本{% endblock %}
+
+{% block content %}
+<!-- 編輯書籍表單頁 -->
+<!-- 傳入變數：book (Book), tags (list[Tag]), errors (dict, 選填) -->
+
+<div class="page-header">
+    <h1>編輯書籍筆記</h1>
+</div>
+
+<form method="POST" action="{{ url_for('books.edit', book_id=book.id) }}" class="book-form">
+    <!-- TODO: 預填原始資料的欄位（同新增表單，value="{{ book.xxx }}"） -->
+    <!-- TODO: 標籤多選（目前已選的標籤預先勾選） -->
+    <!-- TODO: 表單驗證錯誤提示 -->
+    <!-- TODO: 儲存 / 取消 按鈕 -->
+</form>
+{% endblock %}

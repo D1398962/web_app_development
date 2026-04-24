@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}{{ book.title }} — 讀書筆記本{% endblock %}
+
+{% block content %}
+<!-- 書籍詳細頁 -->
+<!-- 傳入變數：book (Book) -->
+
+<div class="page-header">
+    <h1>{{ book.title }}</h1>
+    <div class="book-actions">
+        <a href="{{ url_for('books.edit_form', book_id=book.id) }}" class="btn btn-secondary">✏️ 編輯</a>
+        <!-- TODO: 刪除按鈕（含確認對話框） -->
+    </div>
+</div>
+
+<article class="book-detail">
+    <!-- TODO: 封面圖片 -->
+    <!-- TODO: 作者、閱讀完成日期、評分星星、書籍類別標籤 -->
+    <!-- TODO: 閱讀心得 -->
+    <!-- TODO: 引用金句（有填才顯示） -->
+    <!-- TODO: 是否公開推薦標記 -->
+</article>
+
+<!-- 刪除確認對話框 -->
+<dialog id="delete-dialog">
+    <!-- TODO: 確認刪除提示文字 + 確認/取消按鈕 -->
+    <form method="POST" action="{{ url_for('books.delete', book_id=book.id) }}">
+        <!-- TODO: 刪除表單 -->
+    </form>
+</dialog>
+{% endblock %}

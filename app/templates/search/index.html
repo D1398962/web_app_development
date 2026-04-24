@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}搜尋書籍 — 讀書筆記本{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/search.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<!-- 搜尋與篩選頁 -->
+<!-- 傳入變數：books (list[Book]), tags (list[Tag]), q (str) -->
+
+<div class="page-header">
+    <h1>搜尋書籍</h1>
+</div>
+
+<div class="search-container">
+    <!-- TODO: 即時搜尋輸入框（預填 q） -->
+    <!-- TODO: 篩選面板：類別多選、評分滑桿、日期區間、是否推薦 -->
+</div>
+
+<div id="search-results">
+    <!-- TODO: 搜尋結果列表（由 search.js 動態更新） -->
+    <!-- TODO: 無結果時顯示空狀態提示 -->
+</div>
+{% endblock %}

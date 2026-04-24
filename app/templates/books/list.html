@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}書單 — 讀書筆記本{% endblock %}
+
+{% block content %}
+<!-- 書籍清單頁 -->
+<!-- 傳入變數：books (list[Book]), sort_by (str), order (str) -->
+
+<div class="page-header">
+    <h1>我的書單</h1>
+    <!-- TODO: 排序選項（閱讀日期 / 評分 / 書名） -->
+</div>
+
+<div class="books-grid">
+    {% for book in books %}
+    <!-- TODO: 書籍卡片（書名、作者、評分、閱讀日期、類別標籤） -->
+    {% else %}
+    <!-- TODO: 空狀態提示 -->
+    {% endfor %}
+</div>
+{% endblock %}

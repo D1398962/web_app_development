@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}統計儀表板 — 讀書筆記本{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<!-- 統計儀表板頁 -->
+<!-- 傳入變數：
+     total_books (int), month_books (int), year_books (int),
+     avg_rating (float), top_books (list[Book]),
+     category_data (dict), monthly_trend (list),
+     period (str)
+-->
+
+<div class="page-header">
+    <h1>閱讀統計</h1>
+    <!-- TODO: 時間範圍切換（今年 / 全部時間） -->
+</div>
+
+<div class="stats-grid">
+    <!-- TODO: 數字卡片：總閱讀數、本月、本年、平均評分 -->
+</div>
+
+<div class="charts-grid">
+    <!-- TODO: 圓餅圖（書籍類別分佈） -->
+    <canvas id="category-chart"></canvas>
+
+    <!-- TODO: 折線圖（每月閱讀趨勢） -->
+    <canvas id="trend-chart"></canvas>
+</div>
+
+<div class="top-books">
+    <!-- TODO: Top 3 高分書籍列表 -->
+</div>
+
+<!-- 傳遞統計資料給 dashboard.js -->
+<script>
+    const CHART_DATA = {
+        categoryData: {{ category_data | tojson }},
+        monthlyTrend: {{ monthly_trend | tojson }}
+    };
+</script>
+{% endblock %}

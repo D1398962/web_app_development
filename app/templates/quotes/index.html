@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}金句收藏 — 讀書筆記本{% endblock %}
+
+{% block content %}
+<!-- 金句收藏庫頁 -->
+<!-- 傳入變數：books (list[Book])，只包含有填寫金句的書籍 -->
+
+<div class="page-header">
+    <h1>💬 金句收藏庫</h1>
+    <!-- TODO: 「今日金句」按鈕（呼叫 /quotes/random API） -->
+</div>
+
+<!-- 今日金句展示區（由 JS 動態填入） -->
+<div id="daily-quote" class="daily-quote hidden">
+    <!-- TODO: 隨機金句卡片 -->
+</div>
+
+<div class="quotes-grid">
+    {% for book in books %}
+    <!-- TODO: 金句卡片（金句內容、出處書名、作者、複製按鈕） -->
+    {% else %}
+    <!-- TODO: 空狀態提示（尚無金句） -->
+    {% endfor %}
+</div>
+{% endblock %}
