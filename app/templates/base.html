@@ -4,26 +4,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}讀書筆記本{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- 側邊欄導航 -->
-    <nav id="sidebar">
-        <div class="sidebar-logo">📚 讀書筆記本</div>
-        <ul class="sidebar-nav">
-            <li><a href="{{ url_for('books.index') }}">📋 書單</a></li>
-            <li><a href="{{ url_for('books.create_form') }}">➕ 新增筆記</a></li>
-            <li><a href="{{ url_for('search.index') }}">🔍 搜尋</a></li>
-            <li><a href="{{ url_for('dashboard.index') }}">📊 統計</a></li>
-            <li><a href="{{ url_for('quotes.index') }}">💬 金句</a></li>
-            <li><a href="{{ url_for('tags.index') }}">🏷️ 標籤管理</a></li>
-        </ul>
-    </nav>
 
-    <!-- 主內容區 -->
+    <!-- 側邊欄 -->
+    <aside id="sidebar">
+        <div class="sidebar-brand">
+            <span class="brand-icon">📚</span>
+            <span class="brand-name">讀書筆記本</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('books.index') }}"
+               class="nav-item {% if request.endpoint and request.endpoint.startswith('books') %}active{% endif %}">
+                <span class="nav-icon">📋</span>書單
+            </a>
+            <a href="{{ url_for('books.create_form') }}"
+               class="nav-item {% if request.endpoint == 'books.create_form' %}active{% endif %}">
+                <span class="nav-icon">➕</span>新增筆記
+            </a>
+            <a href="{{ url_for('search.index') }}"
+               class="nav-item {% if request.endpoint and request.endpoint.startswith('search') %}active{% endif %}">
+                <span class="nav-icon">🔍</span>搜尋
+            </a>
+            <a href="{{ url_for('dashboard.index') }}"
+               class="nav-item {% if request.endpoint and request.endpoint.startswith('dashboard') %}active{% endif %}">
+                <span class="nav-icon">📊</span>統計
+            </a>
+            <a href="{{ url_for('quotes.index') }}"
+               class="nav-item {% if request.endpoint and request.endpoint.startswith('quotes') %}active{% endif %}">
+                <span class="nav-icon">💬</span>金句收藏
+            </a>
+            <a href="{{ url_for('tags.index') }}"
+               class="nav-item {% if request.endpoint and request.endpoint.startswith('tags') %}active{% endif %}">
+                <span class="nav-icon">🏷️</span>標籤管理
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{{ url_for('export.export_csv') }}" class="export-link">⬇ 匯出 CSV</a>
+            <a href="{{ url_for('export.export_json') }}" class="export-link">⬇ 匯出 JSON</a>
+        </div>
+    </aside>
+
+    <!-- 主內容 -->
     <main id="main-content">
-        <!-- Flash 訊息 -->
+
+        <!-- Toast 通知 -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <div id="toast-container">

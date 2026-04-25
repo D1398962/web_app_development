@@ -1,19 +1,131 @@
 {% extends "base.html" %}
-
-{% block title %}新增書籍 — 讀書筆記本{% endblock %}
+{% block title %}新增書籍筆記 — 讀書筆記本{% endblock %}
 
 {% block content %}
-<!-- 新增書籍表單頁 -->
-<!-- 傳入變數：tags (list[Tag]), errors (dict, 選填) -->
-
 <div class="page-header">
-    <h1>新增書籍筆記</h1>
+    <h1>📝 新增書籍筆記</h1>
+    <a href="{{ url_for('books.index') }}" class="btn btn-ghost">← 返回書單</a>
 </div>
 
-<form method="POST" action="{{ url_for('books.create') }}" class="book-form">
-    <!-- TODO: 必填欄位：書名、作者、閱讀完成日期、評分、心得 -->
-    <!-- TODO: 選填欄位：書籍類別（多選標籤）、封面圖片 URL、是否推薦、引用金句、頁數 -->
-    <!-- TODO: 表單驗證錯誤提示 -->
-    <!-- TODO: 儲存 / 取消 按鈕 -->
+<form method="POST" action="{{ url_for('books.create') }}" class="book-form" novalidate>
+
+    <div class="form-section">
+        <h2 class="form-section-title">📌 基本資訊</h2>
+
+        <!-- 書名 -->
+        <div class="form-group {% if errors.title %}has-error{% endif %}">
+            <label for="title">書名 <span class="required">*</span></label>
+            <input type="text" id="title" name="title"
+                   value="{{ form.get('title', '') }}"
+                   placeholder="請輸入書籍完整名稱" autocomplete="off">
+            {% if errors.title %}
+                <span class="error-msg">{{ errors.title }}</span>
+            {% endif %}
+        </div>
+
+        <!-- 作者 -->
+        <div class="form-group {% if errors.author %}has-error{% endif %}">
+            <label for="author">作者 <span class="required">*</span></label>
+            <input type="text" id="author" name="author"
+                   value="{{ form.get('author', '') }}"
+                   placeholder="作者姓名（多位以逗號分隔）" autocomplete="off">
+            {% if errors.author %}
+                <span class="error-msg">{{ errors.author }}</span>
+            {% endif %}
+        </div>
+
+        <!-- 閱讀完成日期 & 評分 -->
+        <div class="form-row">
+            <div class="form-group {% if errors.finished_at %}has-error{% endif %}">
+                <label for="finished_at">閱讀完成日期 <span class="required">*</span></label>
+                <input type="date" id="finished_at" name="finished_at"
+                       value="{{ form.get('finished_at', '') }}">
+                {% if errors.finished_at %}
+                    <span class="error-msg">{{ errors.finished_at }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-group {% if errors.rating %}has-error{% endif %}">
+                <label for="rating">個人評分 <span class="required">*</span></label>
+                <input type="number" id="rating" name="rating"
+                       value="{{ form.get('rating', '') }}"
+                       min="1" max="5" step="0.5" placeholder="1.0 ~ 5.0">
+                {% if errors.rating %}
+                    <span class="error-msg">{{ errors.rating }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h2 class="form-section-title">💭 閱讀心得</h2>
+
+        <!-- 心得 -->
+        <div class="form-group {% if errors.review %}has-error{% endif %}">
+            <label for="review">閱讀心得 <span class="required">*</span></label>
+            <textarea id="review" name="review" rows="6"
+                      placeholder="寫下你的閱讀感想、重點摘要…">{{ form.get('review', '') }}</textarea>
+            {% if errors.review %}
+                <span class="error-msg">{{ errors.review }}</span>
+            {% endif %}
+        </div>
+
+        <!-- 引用金句 -->
+        <div class="form-group">
+            <label for="quote">引用金句 <span class="optional">（選填）</span></label>
+            <textarea id="quote" name="quote" rows="3"
+                      placeholder="摘錄書中印象深刻的句子…">{{ form.get('quote', '') }}</textarea>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h2 class="form-section-title">⚙️ 其他資訊</h2>
+
+        <!-- 書籍類別 -->
+        <div class="form-group">
+            <label>書籍類別 <span class="optional">（選填，可多選）</span></label>
+            <div class="tag-checkboxes">
+                {% for tag in tags %}
+                <label class="tag-checkbox">
+                    <input type="checkbox" name="tag_ids" value="{{ tag.id }}"
+                           {% if tag.id in selected_tag_ids %}checked{% endif %}>
+                    <span class="tag-label">{{ tag.name }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 封面圖片 URL & 頁數 -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="cover_url">封面圖片 URL <span class="optional">（選填）</span></label>
+                <input type="url" id="cover_url" name="cover_url"
+                       value="{{ form.get('cover_url', '') }}"
+                       placeholder="https://...">
+            </div>
+            <div class="form-group">
+                <label for="page_count">總頁數 <span class="optional">（選填）</span></label>
+                <input type="number" id="page_count" name="page_count"
+                       value="{{ form.get('page_count', '') }}"
+                       min="1" placeholder="例：320">
+            </div>
+        </div>
+
+        <!-- 是否推薦 -->
+        <div class="form-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="is_recommend" name="is_recommend"
+                       {% if form.get('is_recommend') %}checked{% endif %}>
+                <span>👍 推薦給他人</span>
+            </label>
+        </div>
+    </div>
+
+    <!-- 按鈕列 -->
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">💾 儲存筆記</button>
+        <a href="{{ url_for('books.index') }}" class="btn btn-ghost">取消</a>
+    </div>
+
 </form>
 {% endblock %}

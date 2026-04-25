@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-
 {% block title %}搜尋書籍 — 讀書筆記本{% endblock %}
 
 {% block extra_js %}
@@ -7,20 +6,118 @@
 {% endblock %}
 
 {% block content %}
-<!-- 搜尋與篩選頁 -->
-<!-- 傳入變數：books (list[Book]), tags (list[Tag]), q (str) -->
-
 <div class="page-header">
-    <h1>搜尋書籍</h1>
+    <h1>🔍 搜尋書籍</h1>
 </div>
 
-<div class="search-container">
-    <!-- TODO: 即時搜尋輸入框（預填 q） -->
-    <!-- TODO: 篩選面板：類別多選、評分滑桿、日期區間、是否推薦 -->
+<!-- 搜尋列 -->
+<div class="search-bar">
+    <input type="text" id="search-input" placeholder="搜尋書名、作者、心得關鍵字…"
+           value="{{ q }}" autocomplete="off">
+    <span class="search-icon">🔍</span>
+</div>
+
+<!-- 篩選面板 -->
+<details class="filter-panel" {% if q %}open{% endif %}>
+    <summary>進階篩選</summary>
+    <div class="filter-grid">
+
+        <!-- 書籍類別 -->
+        <div class="filter-group">
+            <label class="filter-label">書籍類別</label>
+            <div class="tag-filter-list" id="filter-categories">
+                {% for tag in tags %}
+                <label class="tag-checkbox">
+                    <input type="checkbox" class="filter-cat" value="{{ tag.id }}">
+                    <span class="tag-label">{{ tag.name }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 評分範圍 -->
+        <div class="filter-group">
+            <label class="filter-label">評分範圍：
+                <span id="rating-range-label">1.0 ~ 5.0</span>
+            </label>
+            <div class="range-row">
+                <input type="range" id="rating-min" min="1" max="5" step="0.5" value="1">
+                <input type="range" id="rating-max" min="1" max="5" step="0.5" value="5">
+            </div>
+        </div>
+
+        <!-- 閱讀日期區間 -->
+        <div class="filter-group">
+            <label class="filter-label">閱讀日期區間</label>
+            <div class="date-row">
+                <input type="date" id="date-from" placeholder="起始日">
+                <span>～</span>
+                <input type="date" id="date-to" placeholder="結束日">
+            </div>
+        </div>
+
+        <!-- 是否推薦 -->
+        <div class="filter-group">
+            <label class="filter-label">推薦篩選</label>
+            <div class="radio-group">
+                <label><input type="radio" name="is_recommend" value="all" checked> 全部</label>
+                <label><input type="radio" name="is_recommend" value="true"> 👍 推薦</label>
+                <label><input type="radio" name="is_recommend" value="false"> 未標推薦</label>
+            </div>
+        </div>
+
+    </div>
+    <button type="button" id="clear-filters" class="btn btn-ghost btn-sm">清除篩選</button>
+</details>
+
+<!-- 搜尋結果 -->
+<div class="search-meta" id="search-meta">
+    {% if q %}
+        <span>搜尋「<strong>{{ q }}</strong>」，共找到 {{ books | length }} 筆結果</span>
+    {% endif %}
 </div>
 
 <div id="search-results">
-    <!-- TODO: 搜尋結果列表（由 search.js 動態更新） -->
-    <!-- TODO: 無結果時顯示空狀態提示 -->
+    {% if books %}
+        {% for book in books %}
+        <a href="/books/{{ book.id }}" class="search-result-item">
+            <div class="result-cover">
+                {% if book.cover_url %}
+                    <img src="{{ book.cover_url }}" alt="{{ book.title }}"
+                         onerror="this.style.display='none'">
+                {% else %}
+                    <div class="cover-fallback small">📖</div>
+                {% endif %}
+            </div>
+            <div class="result-info">
+                <h3 class="result-title">{{ book.title }}</h3>
+                <p class="result-author">{{ book.author }}</p>
+                <div class="result-meta">
+                    <span class="rating-stars">{{ '★' * (book.rating | int) }}</span>
+                    <span>{{ book.rating }}</span>
+                    <span class="result-date">{{ book.finished_at.strftime('%Y/%m/%d') }}</span>
+                </div>
+                {% if book.tags %}
+                <div class="result-tags">
+                    {% for tag in book.tags %}<span class="tag">{{ tag.name }}</span>{% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </a>
+        {% endfor %}
+    {% elif q %}
+        <div class="empty-state">
+            <div class="empty-icon">🔎</div>
+            <h2>找不到符合的書籍</h2>
+            <p>試試其他關鍵字，或清除篩選條件。</p>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">🔍</div>
+            <h2>輸入關鍵字開始搜尋</h2>
+            <p>可搜尋書名、作者或閱讀心得中的文字。</p>
+        </div>
+    {% endif %}
 </div>
+
 {% endblock %}

@@ -1,21 +1,87 @@
 {% extends "base.html" %}
-
 {% block title %}書單 — 讀書筆記本{% endblock %}
 
 {% block content %}
-<!-- 書籍清單頁 -->
-<!-- 傳入變數：books (list[Book]), sort_by (str), order (str) -->
-
 <div class="page-header">
-    <h1>我的書單</h1>
-    <!-- TODO: 排序選項（閱讀日期 / 評分 / 書名） -->
+    <h1>我的書單
+        <span class="badge">{{ books | length }} 本</span>
+    </h1>
+    <a href="{{ url_for('books.create_form') }}" class="btn btn-primary">➕ 新增筆記</a>
 </div>
 
-<div class="books-grid">
-    {% for book in books %}
-    <!-- TODO: 書籍卡片（書名、作者、評分、閱讀日期、類別標籤） -->
-    {% else %}
-    <!-- TODO: 空狀態提示 -->
+<!-- 排序列 -->
+<div class="sort-bar">
+    <span class="sort-label">排序：</span>
+    {% set orders = [
+        ('created_at', '新增時間'),
+        ('finished_at', '閱讀日期'),
+        ('rating', '評分'),
+        ('title', '書名'),
+    ] %}
+    {% for key, label in orders %}
+        {% set new_order = 'asc' if (sort_by == key and order == 'desc') else 'desc' %}
+        <a href="{{ url_for('books.index', sort_by=key, order=new_order) }}"
+           class="sort-btn {% if sort_by == key %}active{% endif %}">
+            {{ label }}
+            {% if sort_by == key %}
+                {{ '↑' if order == 'asc' else '↓' }}
+            {% endif %}
+        </a>
     {% endfor %}
 </div>
+
+<!-- 書籍卡片格 -->
+{% if books %}
+<div class="books-grid">
+    {% for book in books %}
+    <a href="{{ url_for('books.detail', book_id=book.id) }}" class="book-card">
+        <!-- 封面 -->
+        <div class="card-cover">
+            {% if book.cover_url %}
+                <img src="{{ book.cover_url }}" alt="{{ book.title }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                <div class="cover-fallback" style="display:none">📖</div>
+            {% else %}
+                <div class="cover-fallback">📖</div>
+            {% endif %}
+        </div>
+        <!-- 卡片內容 -->
+        <div class="card-body">
+            <h3 class="card-title">{{ book.title }}</h3>
+            <p class="card-author">{{ book.author }}</p>
+            <!-- 星等 -->
+            <div class="card-rating">
+                {% set full = book.rating | int %}
+                {% set half = (book.rating - full) >= 0.5 %}
+                {% for i in range(full) %}★{% endfor %}
+                {% if half %}½{% endif %}
+                <span class="rating-num">{{ book.rating }}</span>
+            </div>
+            <!-- 日期 & 標籤 -->
+            <div class="card-meta">
+                <span class="card-date">{{ book.finished_at.strftime('%Y/%m/%d') }}</span>
+                {% if book.is_recommend %}
+                    <span class="badge-recommend">👍 推薦</span>
+                {% endif %}
+            </div>
+            {% if book.tags %}
+            <div class="card-tags">
+                {% for tag in book.tags %}
+                    <span class="tag">{{ tag.name }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </a>
+    {% endfor %}
+</div>
+
+{% else %}
+<!-- 空狀態 -->
+<div class="empty-state">
+    <div class="empty-icon">📭</div>
+    <h2>還沒有任何書籍筆記</h2>
+    <p>開始記錄你的第一本書吧！</p>
+    <a href="{{ url_for('books.create_form') }}" class="btn btn-primary">➕ 新增第一筆筆記</a>
+</div>
+{% endif %}
 {% endblock %}

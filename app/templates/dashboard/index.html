@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-
 {% block title %}統計儀表板 — 讀書筆記本{% endblock %}
 
 {% block extra_js %}
@@ -8,40 +7,97 @@
 {% endblock %}
 
 {% block content %}
-<!-- 統計儀表板頁 -->
-<!-- 傳入變數：
-     total_books (int), month_books (int), year_books (int),
-     avg_rating (float), top_books (list[Book]),
-     category_data (dict), monthly_trend (list),
-     period (str)
--->
-
 <div class="page-header">
-    <h1>閱讀統計</h1>
-    <!-- TODO: 時間範圍切換（今年 / 全部時間） -->
+    <h1>📊 閱讀統計</h1>
+    <!-- 時間範圍切換 -->
+    <div class="period-tabs">
+        <a href="{{ url_for('dashboard.index', period='year') }}"
+           class="period-tab {% if period == 'year' %}active{% endif %}">{{ current_year }} 年</a>
+        <a href="{{ url_for('dashboard.index', period='all') }}"
+           class="period-tab {% if period == 'all' %}active{% endif %}">全部時間</a>
+    </div>
 </div>
 
+<!-- 數字卡片 -->
 <div class="stats-grid">
-    <!-- TODO: 數字卡片：總閱讀數、本月、本年、平均評分 -->
+    <div class="stat-card">
+        <div class="stat-icon">📚</div>
+        <div class="stat-value">{{ total_books }}</div>
+        <div class="stat-label">總閱讀冊數</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <div class="stat-value">{{ month_books }}</div>
+        <div class="stat-label">本月閱讀</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">🗓️</div>
+        <div class="stat-value">{{ year_books }}</div>
+        <div class="stat-label">本年閱讀</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">⭐</div>
+        <div class="stat-value">{{ avg_rating }}</div>
+        <div class="stat-label">平均評分</div>
+    </div>
 </div>
 
+<!-- 圖表區 -->
+{% if total_books > 0 %}
 <div class="charts-grid">
-    <!-- TODO: 圓餅圖（書籍類別分佈） -->
-    <canvas id="category-chart"></canvas>
-
-    <!-- TODO: 折線圖（每月閱讀趨勢） -->
-    <canvas id="trend-chart"></canvas>
+    <!-- 折線圖：每月閱讀趨勢 -->
+    <div class="chart-card">
+        <h2>📈 每月閱讀趨勢（過去 12 個月）</h2>
+        <canvas id="trend-chart"></canvas>
+    </div>
+    <!-- 圓餅圖：類別分佈 -->
+    <div class="chart-card">
+        <h2>🍩 書籍類別分佈</h2>
+        {% if category_data.labels %}
+            <canvas id="category-chart"></canvas>
+        {% else %}
+            <p class="no-data">尚無標籤資料</p>
+        {% endif %}
+    </div>
 </div>
+{% endif %}
 
-<div class="top-books">
-    <!-- TODO: Top 3 高分書籍列表 -->
+<!-- Top 3 高分書籍 -->
+{% if top_books %}
+<div class="top-books-section">
+    <h2>🏆 最高評分書籍</h2>
+    <div class="top-books-list">
+        {% for book in top_books %}
+        <a href="{{ url_for('books.detail', book_id=book.id) }}" class="top-book-item">
+            <span class="top-rank">{{ loop.index }}</span>
+            <div class="top-book-info">
+                <span class="top-book-title">{{ book.title }}</span>
+                <span class="top-book-author">{{ book.author }}</span>
+            </div>
+            <div class="top-book-rating">
+                <span class="stars">{% for i in range(book.rating | int) %}★{% endfor %}</span>
+                <span class="rating-num">{{ book.rating }}</span>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
 </div>
+{% endif %}
 
-<!-- 傳遞統計資料給 dashboard.js -->
+{% if total_books == 0 %}
+<div class="empty-state">
+    <div class="empty-icon">📊</div>
+    <h2>還沒有統計資料</h2>
+    <p>新增書籍筆記後，這裡會顯示你的閱讀概況。</p>
+    <a href="{{ url_for('books.create_form') }}" class="btn btn-primary">➕ 新增第一筆筆記</a>
+</div>
+{% endif %}
+
+<!-- 傳遞圖表資料給 dashboard.js -->
 <script>
-    const CHART_DATA = {
-        categoryData: {{ category_data | tojson }},
-        monthlyTrend: {{ monthly_trend | tojson }}
-    };
+const CHART_DATA = {
+    monthlyTrend: {{ monthly_trend | tojson }},
+    categoryData: {{ category_data | tojson }}
+};
 </script>
 {% endblock %}

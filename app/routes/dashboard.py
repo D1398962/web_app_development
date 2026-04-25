@@ -1,4 +1,8 @@
+from datetime import datetime
 from flask import Blueprint, render_template, request
+from app.models.book import Book
+from app.models.tag import Tag
+from app import db
 
 dashboard_bp = Blueprint("dashboard", __name__, url_prefix="/dashboard")
 
@@ -9,16 +13,56 @@ def index():
 
     Query 參數：
         period (str): 時間範圍 'year'（今年，預設）/ 'all'（全部時間）
-
-    回傳：
-        渲染 dashboard/index.html，傳入統計數據 dict：
-            - total_books      (int):   總書籍數
-            - month_books      (int):   本月閱讀數
-            - year_books       (int):   本年閱讀數
-            - avg_rating       (float): 平均評分
-            - top_books        (list):  Top 3 高分書籍
-            - category_data    (dict):  各標籤書籍數（圓餅圖用）
-            - monthly_trend    (list):  過去 12 個月閱讀量（折線圖用）
-            - period           (str):   目前選擇的時間範圍
     """
-    pass
+    period = request.args.get("period", "year")
+    if period not in ("year", "all"):
+        period = "year"
+
+    now = datetime.now()
+    year, month = now.year, now.month
+
+    # ── 基本統計 ──────────────────────────────────────────
+    total_books = Book.count_all()
+    month_books = Book.count_by_month(year, month)
+    year_books  = Book.count_by_year(year)
+    avg_rating  = Book.average_rating()
+    top_books   = Book.top_rated(limit=3)
+
+    # ── 類別分佈（圓餅圖） ────────────────────────────────
+    tags = Tag.get_all()
+    category_data = {
+        "labels": [],
+        "values": [],
+    }
+    for tag in tags:
+        count = len(tag.books)
+        if count > 0:
+            category_data["labels"].append(tag.name)
+            category_data["values"].append(count)
+
+    # ── 每月閱讀趨勢（過去 12 個月，折線圖） ─────────────
+    monthly_trend = []
+    for i in range(11, -1, -1):
+        m = month - i
+        y = year
+        while m <= 0:
+            m += 12
+            y -= 1
+        cnt = Book.count_by_month(y, m)
+        monthly_trend.append({
+            "label": f"{y}/{m:02d}",
+            "count": cnt,
+        })
+
+    return render_template(
+        "dashboard/index.html",
+        total_books=total_books,
+        month_books=month_books,
+        year_books=year_books,
+        avg_rating=avg_rating,
+        top_books=top_books,
+        category_data=category_data,
+        monthly_trend=monthly_trend,
+        period=period,
+        current_year=year,
+    )

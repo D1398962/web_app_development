@@ -1,32 +1,118 @@
 {% extends "base.html" %}
-
 {% block title %}{{ book.title }} — 讀書筆記本{% endblock %}
 
 {% block content %}
-<!-- 書籍詳細頁 -->
-<!-- 傳入變數：book (Book) -->
-
 <div class="page-header">
-    <h1>{{ book.title }}</h1>
-    <div class="book-actions">
+    <div class="header-left">
+        <a href="{{ url_for('books.index') }}" class="btn btn-ghost">← 書單</a>
+    </div>
+    <div class="header-actions">
         <a href="{{ url_for('books.edit_form', book_id=book.id) }}" class="btn btn-secondary">✏️ 編輯</a>
-        <!-- TODO: 刪除按鈕（含確認對話框） -->
+        <button type="button" class="btn btn-danger" onclick="document.getElementById('delete-dialog').showModal()">
+            🗑️ 刪除
+        </button>
     </div>
 </div>
 
 <article class="book-detail">
-    <!-- TODO: 封面圖片 -->
-    <!-- TODO: 作者、閱讀完成日期、評分星星、書籍類別標籤 -->
-    <!-- TODO: 閱讀心得 -->
-    <!-- TODO: 引用金句（有填才顯示） -->
-    <!-- TODO: 是否公開推薦標記 -->
+
+    <!-- 上方區：封面 + 基本資訊 -->
+    <div class="detail-hero">
+        <div class="detail-cover">
+            {% if book.cover_url %}
+                <img src="{{ book.cover_url }}" alt="{{ book.title }}"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                <div class="cover-fallback" style="display:none">📖</div>
+            {% else %}
+                <div class="cover-fallback large">📖</div>
+            {% endif %}
+        </div>
+
+        <div class="detail-info">
+            <h1 class="detail-title">{{ book.title }}</h1>
+            <p class="detail-author">{{ book.author }}</p>
+
+            <!-- 星等評分 -->
+            <div class="detail-rating">
+                {% set full = book.rating | int %}
+                {% set half = (book.rating - full) >= 0.5 %}
+                <span class="stars">
+                    {% for i in range(full) %}★{% endfor %}
+                    {% if half %}½{% endif %}
+                    {% for i in range(5 - full - (1 if half else 0)) %}☆{% endfor %}
+                </span>
+                <span class="rating-value">{{ book.rating }} / 5.0</span>
+            </div>
+
+            <!-- 閱讀日期 -->
+            <div class="detail-meta-row">
+                <span class="meta-label">📅 閱讀完成</span>
+                <span class="meta-value">{{ book.finished_at.strftime('%Y 年 %m 月 %d 日') }}</span>
+            </div>
+
+            {% if book.page_count %}
+            <div class="detail-meta-row">
+                <span class="meta-label">📄 總頁數</span>
+                <span class="meta-value">{{ book.page_count }} 頁</span>
+            </div>
+            {% endif %}
+
+            {% if book.is_recommend %}
+            <div class="detail-meta-row">
+                <span class="recommend-badge">👍 我推薦這本書</span>
+            </div>
+            {% endif %}
+
+            <!-- 標籤 -->
+            {% if book.tags %}
+            <div class="detail-tags">
+                {% for tag in book.tags %}
+                    <span class="tag">{{ tag.name }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- 建立/更新時間 -->
+            <div class="detail-timestamps">
+                <small>建立於 {{ book.created_at.strftime('%Y/%m/%d') }}</small>
+                {% if book.updated_at != book.created_at %}
+                <small>· 更新於 {{ book.updated_at.strftime('%Y/%m/%d') }}</small>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 閱讀心得 -->
+    <section class="detail-section">
+        <h2>💭 閱讀心得</h2>
+        <div class="review-content">{{ book.review | nl2br | safe }}</div>
+    </section>
+
+    <!-- 引用金句 -->
+    {% if book.quote %}
+    <section class="detail-section">
+        <h2>💬 引用金句</h2>
+        <blockquote class="quote-block">
+            {{ book.quote }}
+            <footer>— {{ book.title }}，{{ book.author }}</footer>
+        </blockquote>
+    </section>
+    {% endif %}
+
 </article>
 
 <!-- 刪除確認對話框 -->
-<dialog id="delete-dialog">
-    <!-- TODO: 確認刪除提示文字 + 確認/取消按鈕 -->
-    <form method="POST" action="{{ url_for('books.delete', book_id=book.id) }}">
-        <!-- TODO: 刪除表單 -->
-    </form>
+<dialog id="delete-dialog" class="confirm-dialog">
+    <div class="dialog-content">
+        <h3>⚠️ 確認刪除</h3>
+        <p>確定要刪除《{{ book.title }}》的筆記嗎？<br>此操作無法復原。</p>
+        <div class="dialog-actions">
+            <form method="POST" action="{{ url_for('books.delete', book_id=book.id) }}">
+                <button type="submit" class="btn btn-danger">確認刪除</button>
+            </form>
+            <button type="button" class="btn btn-ghost"
+                    onclick="document.getElementById('delete-dialog').close()">取消</button>
+        </div>
+    </div>
 </dialog>
 {% endblock %}

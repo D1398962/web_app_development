@@ -1,30 +1,70 @@
 {% extends "base.html" %}
-
 {% block title %}標籤管理 — 讀書筆記本{% endblock %}
 
 {% block content %}
-<!-- 標籤管理頁 -->
-<!-- 傳入變數：tags (list[Tag])，每個 tag 附帶 book_count -->
-
 <div class="page-header">
     <h1>🏷️ 標籤管理</h1>
 </div>
 
 <!-- 新增標籤表單 -->
-<form method="POST" action="{{ url_for('tags.create') }}" class="tag-create-form">
-    <!-- TODO: 標籤名稱輸入框 + 新增按鈕 -->
-</form>
+<div class="tag-create-panel">
+    <form method="POST" action="{{ url_for('tags.create') }}" class="tag-create-form">
+        <input type="text" name="name" placeholder="輸入新標籤名稱…" required autocomplete="off">
+        <button type="submit" class="btn btn-primary btn-sm">＋ 新增</button>
+    </form>
+</div>
 
-<!-- 標籤列表 -->
+<!-- 標籤清單 -->
+{% if tags_with_count %}
 <ul class="tags-list">
-    {% for tag in tags %}
+    {% for item in tags_with_count %}
+    {% set tag = item.tag %}
     <li class="tag-item">
-        <!-- TODO: 標籤名稱、書籍數量 -->
-        <!-- TODO: 重新命名表單（inline edit） -->
-        <!-- TODO: 刪除按鈕（含確認） -->
+
+        <!-- 標籤名稱 & 書籍數 -->
+        <div class="tag-info">
+            <span class="tag tag-large">{{ tag.name }}</span>
+            <span class="tag-book-count">{{ item.book_count }} 本</span>
+        </div>
+
+        <!-- 操作區 -->
+        <div class="tag-actions">
+            <!-- 重新命名（inline 表單） -->
+            <form method="POST" action="{{ url_for('tags.edit', tag_id=tag.id) }}"
+                  class="rename-form" id="rename-form-{{ tag.id }}">
+                <input type="text" name="name" value="{{ tag.name }}"
+                       class="rename-input" required>
+                <button type="submit" class="btn btn-ghost btn-sm">✓ 儲存</button>
+                <button type="button" class="btn btn-ghost btn-sm"
+                        onclick="toggleRename({{ tag.id }})">✕</button>
+            </form>
+
+            <button type="button" class="btn btn-ghost btn-sm"
+                    onclick="toggleRename({{ tag.id }})">✏️ 重新命名</button>
+
+            <!-- 刪除 -->
+            <form method="POST" action="{{ url_for('tags.delete', tag_id=tag.id) }}"
+                  onsubmit="return confirm('確定刪除標籤「{{ tag.name }}」？\n含有此標籤的書籍不受影響。')">
+                <button type="submit" class="btn btn-danger btn-sm">🗑️</button>
+            </form>
+        </div>
+
     </li>
-    {% else %}
-    <!-- TODO: 空狀態提示 -->
     {% endfor %}
 </ul>
+
+{% else %}
+<div class="empty-state">
+    <div class="empty-icon">🏷️</div>
+    <h2>尚無任何標籤</h2>
+    <p>使用上方表單新增第一個標籤。</p>
+</div>
+{% endif %}
+
+<script>
+function toggleRename(tagId) {
+    const form = document.getElementById('rename-form-' + tagId);
+    form.classList.toggle('visible');
+}
+</script>
 {% endblock %}

@@ -1,26 +1,45 @@
 {% extends "base.html" %}
-
-{% block title %}金句收藏 — 讀書筆記本{% endblock %}
+{% block title %}金句收藏庫 — 讀書筆記本{% endblock %}
 
 {% block content %}
-<!-- 金句收藏庫頁 -->
-<!-- 傳入變數：books (list[Book])，只包含有填寫金句的書籍 -->
-
 <div class="page-header">
     <h1>💬 金句收藏庫</h1>
-    <!-- TODO: 「今日金句」按鈕（呼叫 /quotes/random API） -->
+    <button type="button" id="random-quote-btn" class="btn btn-secondary">🎲 今日金句</button>
 </div>
 
-<!-- 今日金句展示區（由 JS 動態填入） -->
-<div id="daily-quote" class="daily-quote hidden">
-    <!-- TODO: 隨機金句卡片 -->
+<!-- 今日金句展示區（JS 動態填入） -->
+<div id="daily-quote-card" class="daily-quote hidden">
+    <blockquote id="daily-quote-text"></blockquote>
+    <footer id="daily-quote-source"></footer>
 </div>
 
+<!-- 金句卡片格 -->
+{% if books %}
 <div class="quotes-grid">
     {% for book in books %}
-    <!-- TODO: 金句卡片（金句內容、出處書名、作者、複製按鈕） -->
-    {% else %}
-    <!-- TODO: 空狀態提示（尚無金句） -->
+    <div class="quote-card">
+        <div class="quote-mark">"</div>
+        <blockquote class="quote-text">{{ book.quote }}</blockquote>
+        <div class="quote-source">
+            <a href="{{ url_for('books.detail', book_id=book.id) }}" class="quote-book-link">
+                《{{ book.title }}》
+            </a>
+            <span class="quote-author">— {{ book.author }}</span>
+        </div>
+        <button class="copy-btn" data-text="{{ book.quote }}" title="複製金句">
+            📋 複製
+        </button>
+    </div>
     {% endfor %}
 </div>
+
+{% else %}
+<div class="empty-state">
+    <div class="empty-icon">💬</div>
+    <h2>尚無金句收藏</h2>
+    <p>在書籍筆記中填寫「引用金句」欄位，就會出現在這裡。</p>
+    <a href="{{ url_for('books.create_form') }}" class="btn btn-primary">➕ 新增書籍筆記</a>
+</div>
+{% endif %}
+
 {% endblock %}
