@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>讀書筆記本系統 — 專案展示</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #21262d;
+    --border: #30363d; --accent: #f59e0b; --accent2: #fbbf24;
+    --text: #e6edf3; --muted: #8b949e; --green: #3fb950;
+    --blue: #58a6ff; --purple: #bc8cff;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-serif;line-height:1.6}
+  a{color:var(--accent);text-decoration:none}
+
+  /* HERO */
+  .hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:2rem;background:radial-gradient(ellipse at 50% 0%,#1a1000 0%,var(--bg) 70%)}
+  .hero-badge{display:inline-block;padding:.3rem 1rem;border:1px solid var(--accent);border-radius:999px;
+    font-size:.8rem;color:var(--accent);margin-bottom:1.5rem;letter-spacing:.1em}
+  .hero h1{font-size:clamp(2.5rem,6vw,4.5rem);font-weight:700;line-height:1.2;margin-bottom:1rem}
+  .hero h1 span{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .hero p{font-size:1.15rem;color:var(--muted);max-width:560px;margin:.5rem auto 2rem}
+  .hero-btns{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center}
+  .btn{display:inline-flex;align-items:center;gap:.4rem;padding:.7rem 1.5rem;border-radius:.5rem;
+    font-weight:600;font-size:.95rem;transition:.2s}
+  .btn-primary{background:var(--accent);color:#000}
+  .btn-primary:hover{background:var(--accent2);transform:translateY(-2px)}
+  .btn-outline{border:1px solid var(--border);color:var(--text)}
+  .btn-outline:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px)}
+  .hero-stats{display:flex;gap:2.5rem;margin-top:3rem;flex-wrap:wrap;justify-content:center}
+  .stat{text-align:center}
+  .stat-num{font-size:2rem;font-weight:700;color:var(--accent)}
+  .stat-label{font-size:.8rem;color:var(--muted);letter-spacing:.05em}
+
+  /* SECTION */
+  section{padding:5rem 1.5rem}
+  .container{max-width:1100px;margin:0 auto}
+  .section-tag{font-size:.8rem;color:var(--accent);letter-spacing:.1em;font-weight:600;margin-bottom:.5rem}
+  .section-title{font-size:2rem;font-weight:700;margin-bottom:1rem}
+  .section-sub{color:var(--muted);max-width:500px}
+
+  /* FEATURES */
+  .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;margin-top:3rem}
+  .feat-card{background:var(--surface);border:1px solid var(--border);border-radius:1rem;padding:1.8rem;
+    transition:.3s}
+  .feat-card:hover{border-color:var(--accent);transform:translateY(-4px)}
+  .feat-icon{font-size:2rem;margin-bottom:1rem}
+  .feat-card h3{font-size:1.1rem;font-weight:600;margin-bottom:.5rem}
+  .feat-card p{color:var(--muted);font-size:.9rem}
+
+  /* TECH STACK */
+  .tech-section{background:var(--surface)}
+  .tech-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-top:2.5rem}
+  .tech-card{background:var(--surface2);border:1px solid var(--border);border-radius:.75rem;padding:1.2rem;
+    text-align:center;transition:.2s}
+  .tech-card:hover{border-color:var(--blue)}
+  .tech-icon{font-size:1.8rem;margin-bottom:.5rem}
+  .tech-name{font-weight:600;font-size:.95rem}
+  .tech-desc{color:var(--muted);font-size:.78rem;margin-top:.2rem}
+
+  /* FILE TREE */
+  .tree-section{background:var(--bg)}
+  .tree-box{background:var(--surface);border:1px solid var(--border);border-radius:1rem;padding:2rem;
+    font-family:'Courier New',monospace;font-size:.88rem;overflow-x:auto;margin-top:2rem}
+  .tree-box .dir{color:var(--blue)}
+  .tree-box .file{color:var(--text)}
+  .tree-box .comment{color:var(--muted)}
+  .tree-line{display:block;line-height:1.8}
+
+  /* ROUTES */
+  .routes-section{background:var(--surface)}
+  .routes-table{width:100%;border-collapse:collapse;margin-top:2rem;font-size:.88rem}
+  .routes-table th{background:var(--surface2);padding:.7rem 1rem;text-align:left;
+    border-bottom:1px solid var(--border);color:var(--muted);font-weight:600}
+  .routes-table td{padding:.7rem 1rem;border-bottom:1px solid var(--border)}
+  .routes-table tr:hover td{background:var(--surface2)}
+  .method{display:inline-block;padding:.15rem .5rem;border-radius:.3rem;font-weight:700;font-size:.78rem}
+  .get{background:#0d3321;color:var(--green)}
+  .post{background:#1a1a3e;color:var(--blue)}
+
+  /* TIMELINE */
+  .timeline{position:relative;padding-left:2rem;margin-top:2.5rem}
+  .timeline::before{content:'';position:absolute;left:.5rem;top:0;bottom:0;width:2px;background:var(--border)}
+  .tl-item{position:relative;margin-bottom:2rem}
+  .tl-dot{position:absolute;left:-1.6rem;top:.35rem;width:12px;height:12px;border-radius:50%;
+    background:var(--accent);border:2px solid var(--bg)}
+  .tl-item h4{font-weight:600;margin-bottom:.25rem}
+  .tl-item p{color:var(--muted);font-size:.88rem}
+  .tl-badge{display:inline-block;padding:.1rem .5rem;border-radius:.3rem;font-size:.75rem;
+    font-weight:600;margin-left:.5rem}
+  .done{background:#0d3321;color:var(--green)}
+  .wip{background:#1a1000;color:var(--accent)}
+
+  /* FOOTER */
+  footer{background:var(--surface);border-top:1px solid var(--border);padding:2.5rem 1.5rem;text-align:center}
+  footer p{color:var(--muted);font-size:.88rem}
+
+  /* SCROLL REVEAL */
+  .reveal{opacity:0;transform:translateY(24px);transition:.6s ease}
+  .reveal.visible{opacity:1;transform:none}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">📚 個人專案 · Flask + SQLite</div>
+  <h1>讀書筆記本<br><span>系統展示</span></h1>
+  <p>一個功能完整的個人數位讀書筆記系統，記錄閱讀心得、管理書單，並透過統計圖表回顧閱讀軌跡。</p>
+  <div class="hero-btns">
+    <a href="http://localhost:5000" class="btn btn-primary">🚀 開啟應用程式</a>
+    <a href="https://github.com/D1398962/web_app_development" class="btn btn-outline" target="_blank">⭐ GitHub</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-num">7</div><div class="stat-label">核心功能</div></div>
+    <div class="stat"><div class="stat-num">19</div><div class="stat-label">路由設計</div></div>
+    <div class="stat"><div class="stat-num">3</div><div class="stat-label">資料表</div></div>
+    <div class="stat"><div class="stat-num">5</div><div class="stat-label">設計文件</div></div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section>
+  <div class="container reveal">
+    <div class="section-tag">FEATURES</div>
+    <h2 class="section-title">核心功能</h2>
+    <p class="section-sub">從日常記錄到數據分析，涵蓋個人閱讀管理的完整工作流程。</p>
+    <div class="features-grid">
+      <div class="feat-card">
+        <div class="feat-icon">📝</div>
+        <h3>書籍筆記 CRUD</h3>
+        <p>新增、瀏覽、編輯、刪除書籍記錄。支援封面圖片、評分、心得、引用金句等完整欄位。</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🔍</div>
+        <h3>即時搜尋與篩選</h3>
+        <p>全文搜尋書名、作者、心得內容。支援類別、評分範圍、日期區間多條件組合篩選。</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📊</div>
+        <h3>統計儀表板</h3>
+        <p>視覺化閱讀統計，包含每月趨勢折線圖、類別分佈圓餅圖、Top 3 高分書籍。</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">💬</div>
+        <h3>金句收藏庫</h3>
+        <p>集中展示所有書籍引用金句，支援複製至剪貼簿與「今日隨機金句」功能。</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🏷️</div>
+        <h3>標籤管理</h3>
+        <p>自訂書籍分類標籤，支援新增、重新命名、刪除。系統提供 6 個預設分類標籤。</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">⬇️</div>
+        <h3>資料匯出備份</h3>
+        <p>一鍵匯出所有書籍記錄為 CSV（可用 Excel 開啟）或 JSON 格式，檔名自動帶入日期。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TECH STACK -->
+<section class="tech-section">
+  <div class="container reveal">
+    <div class="section-tag">TECH STACK</div>
+    <h2 class="section-title">技術架構</h2>
+    <div class="tech-grid">
+      <div class="tech-card">
+        <div class="tech-icon">🐍</div>
+        <div class="tech-name">Python 3</div>
+        <div class="tech-desc">主要開發語言</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-icon">⚗️</div>
+        <div class="tech-name">Flask</div>
+        <div class="tech-desc">輕量後端框架</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-icon">🗄️</div>
+        <div class="tech-name">SQLite</div>
+        <div class="tech-desc">本地端資料庫</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-icon">🔗</div>
+        <div class="tech-name">SQLAlchemy</div>
+        <div class="tech-desc">ORM 資料存取</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-icon">🎨</div>
+        <div class="tech-name">Jinja2</div>
+        <div class="tech-desc">HTML 模板引擎</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-icon">📈</div>
+        <div class="tech-name">Chart.js</div>
+        <div class="tech-desc">統計圖表視覺化</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FILE TREE -->
+<section class="tree-section">
+  <div class="container reveal">
+    <div class="section-tag">STRUCTURE</div>
+    <h2 class="section-title">專案資料夾結構</h2>
+    <div class="tree-box">
+      <span class="tree-line"><span class="dir">reading-notebook/</span></span>
+      <span class="tree-line">├── <span class="file">app.py</span>             <span class="comment">← 應用程式入口</span></span>
+      <span class="tree-line">├── <span class="file">requirements.txt</span>   <span class="comment">← 套件清單</span></span>
+      <span class="tree-line">├── <span class="dir">app/</span></span>
+      <span class="tree-line">│   ├── <span class="file">__init__.py</span>    <span class="comment">← Application Factory</span></span>
+      <span class="tree-line">│   ├── <span class="dir">models/</span>        <span class="comment">← SQLAlchemy Model 層</span></span>
+      <span class="tree-line">│   │   ├── <span class="file">book.py</span>    <span class="comment">← Book（含 CRUD + 統計）</span></span>
+      <span class="tree-line">│   │   └── <span class="file">tag.py</span>     <span class="comment">← Tag</span></span>
+      <span class="tree-line">│   ├── <span class="dir">routes/</span>        <span class="comment">← Flask Blueprint 路由層</span></span>
+      <span class="tree-line">│   │   ├── <span class="file">books.py</span>   <span class="comment">← 書籍 CRUD（7 路由）</span></span>
+      <span class="tree-line">│   │   ├── <span class="file">search.py</span>  <span class="comment">← 搜尋 + JSON API</span></span>
+      <span class="tree-line">│   │   ├── <span class="file">dashboard.py</span></span>
+      <span class="tree-line">│   │   ├── <span class="file">quotes.py</span></span>
+      <span class="tree-line">│   │   ├── <span class="file">tags.py</span></span>
+      <span class="tree-line">│   │   └── <span class="file">export.py</span>  <span class="comment">← CSV / JSON 匯出</span></span>
+      <span class="tree-line">│   ├── <span class="dir">templates/</span>     <span class="comment">← Jinja2 HTML 模板</span></span>
+      <span class="tree-line">│   └── <span class="dir">static/</span>        <span class="comment">← CSS / JS 靜態資源</span></span>
+      <span class="tree-line">├── <span class="dir">database/</span></span>
+      <span class="tree-line">│   └── <span class="file">schema.sql</span>     <span class="comment">← SQLite 建表語法</span></span>
+      <span class="tree-line">└── <span class="dir">docs/</span>               <span class="comment">← 設計文件</span></span>
+      <span class="tree-line">    ├── <span class="file">PRD.md</span></span>
+      <span class="tree-line">    ├── <span class="file">ARCHITECTURE.md</span></span>
+      <span class="tree-line">    ├── <span class="file">FLOWCHART.md</span></span>
+      <span class="tree-line">    ├── <span class="file">DB_DESIGN.md</span></span>
+      <span class="tree-line">    └── <span class="file">ROUTES.md</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- ROUTES -->
+<section class="routes-section">
+  <div class="container reveal">
+    <div class="section-tag">API ROUTES</div>
+    <h2 class="section-title">路由總覽</h2>
+    <table class="routes-table">
+      <thead>
+        <tr><th>功能</th><th>方法</th><th>路徑</th><th>說明</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>書籍清單</td><td><span class="method get">GET</span></td><td>/books/</td><td>顯示所有書籍，支援排序</td></tr>
+        <tr><td>新增書籍</td><td><span class="method get">GET</span></td><td>/books/create</td><td>顯示新增表單</td></tr>
+        <tr><td>建立書籍</td><td><span class="method post">POST</span></td><td>/books/create</td><td>寫入資料庫並重導向</td></tr>
+        <tr><td>書籍詳細</td><td><span class="method get">GET</span></td><td>/books/&lt;id&gt;</td><td>顯示完整書籍資料</td></tr>
+        <tr><td>編輯書籍</td><td><span class="method post">POST</span></td><td>/books/&lt;id&gt;/edit</td><td>更新書籍記錄</td></tr>
+        <tr><td>刪除書籍</td><td><span class="method post">POST</span></td><td>/books/&lt;id&gt;/delete</td><td>刪除並重導向清單</td></tr>
+        <tr><td>搜尋頁面</td><td><span class="method get">GET</span></td><td>/search/</td><td>搜尋介面</td></tr>
+        <tr><td>搜尋 API</td><td><span class="method get">GET</span></td><td>/search/api</td><td>回傳 JSON，即時搜尋用</td></tr>
+        <tr><td>統計儀表板</td><td><span class="method get">GET</span></td><td>/dashboard/</td><td>閱讀統計與圖表</td></tr>
+        <tr><td>金句收藏</td><td><span class="method get">GET</span></td><td>/quotes/</td><td>所有引用金句</td></tr>
+        <tr><td>隨機金句</td><td><span class="method get">GET</span></td><td>/quotes/random</td><td>隨機一則金句（JSON）</td></tr>
+        <tr><td>標籤管理</td><td><span class="method get">GET</span></td><td>/tags/</td><td>標籤列表</td></tr>
+        <tr><td>匯出 CSV</td><td><span class="method get">GET</span></td><td>/export/csv</td><td>下載 CSV 檔案</td></tr>
+        <tr><td>匯出 JSON</td><td><span class="method get">GET</span></td><td>/export/json</td><td>下載 JSON 檔案</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- TIMELINE -->
+<section>
+  <div class="container reveal">
+    <div class="section-tag">PROGRESS</div>
+    <h2 class="section-title">開發進度</h2>
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <h4>Phase 1 — 需求與設計文件 <span class="tl-badge done">✅ 完成</span></h4>
+        <p>PRD、系統架構、使用者流程圖、資料庫設計、路由設計文件</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <h4>Phase 2 — 後端實作 <span class="tl-badge done">✅ 完成</span></h4>
+        <p>SQLAlchemy Model、Flask Blueprint 路由（19 條）、Application Factory、資料驗證</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <h4>Phase 3 — 前端模板 <span class="tl-badge done">✅ 完成</span></h4>
+        <p>9 個 Jinja2 HTML 模板（書單、詳細、新增、編輯、搜尋、統計、金句、標籤）</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <h4>Phase 4 — CSS 樣式與 JavaScript <span class="tl-badge wip">🔨 進行中</span></h4>
+        <p>Dark Mode 主題、Chart.js 圖表、即時搜尋、Toast 通知、動畫效果</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>📚 讀書筆記本系統 · 作者：Alice · 2026</p>
+  <p style="margin-top:.5rem">
+    <a href="http://localhost:5000">🚀 開啟應用程式</a> ·
+    <a href="https://github.com/D1398962/web_app_development">⭐ GitHub</a> ·
+    <a href="docs/PRD.md">📄 PRD</a>
+  </p>
+</footer>
+
+<script>
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible') })
+  }, { threshold: 0.1 })
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el))
+</script>
+</body>
+</html>
